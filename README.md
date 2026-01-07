@@ -1,45 +1,62 @@
-# 🔥 NetPhantom
+# 🔥 NetPhantom Framework
 
-**NetPhantom** (Network Phantom Poisoning & Authentication Capture Tool) is a modern, modular, and asynchronous offensive security tool designed for network poisoning and credential capture. It mimics legitimate network services to intercept authentication attempts and extract valuable information like NTLM hashes.
+**NetPhantom** is a modular, production-grade internal network credential interception framework built for high-stability, stealth-aware offensive security operations.
 
-## 🚀 Features
+## 🏗️ Architecture
 
-- **Modular Poisoning Engine**: Supports LLMNR, NBT-NS, and mDNS protocols.
-- **Asynchronous Sniffing**: Uses Scapy and threading for high-performance packet processing.
-- **Rich CLI**: Beautiful and informative command-line interface.
-- **NTLM Hash Extraction**: Automatically extracts NTLMv1/v2 blobs from HTTP and SMB traffic.
-- **Extensible Architecture**: Easily add new protocols or capture mechanisms.
+NetPhantom utilizes an asynchronous, event-driven core capable of orchestrating multiple poisoning protocols and authentication handlers simultaneously.
 
-## 🛠️ Installation
+```mermaid
+graph TD
+    A[Core Engine] --> B[Plugin Manager]
+    B --> C[Protocol Plugins]
+    B --> D[Auth Handlers]
+    C --> C1[LLMNR Plugin]
+    C --> C2[NBNS Plugin]
+    C --> C3[mDNS Plugin]
+    D --> D1[HTTP Auth Handler]
+    A --> E[Env Scanner]
+    A --> F[Session Manager]
+    F --> G[Reporting Engine]
+```
 
-NetPhantom requires Python 3.11+ and uses Poetry for dependency management.
+## 🚀 Key Features
 
+- **Asynchronous Engine**: Powered by `asyncio` for non-blocking network I/O.
+- **Environment Awareness**: Detects SMB signing, domain context, and IPv6 availability before engagement.
+- **Config-Driven**: Profile-based execution using YAML templates.
+- **Structured Observability**: JSON-formatted logging for SIEM integration.
+- **Professional Reporting**: Auto-generated Markdown reports mapped to MITRE ATT&CK Framework.
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Python 3.11+
+- Root/Administrator privileges (for raw socket access)
+
+### Installation
 ```bash
-# Clone the repository
-git clone https://github.com/ismailtasdelen/netphantom.git
-cd netphantom
-
-# Install dependencies
 poetry install
 ```
 
-## 📖 Usage
-
-Run NetPhantom by specifying the network interface and the IP address you want to spoof.
-
+### Usage
 ```bash
-# Start NetPhantom with default protocols (LLMNR, NBT-NS, mDNS)
-poetry run python -m netph.ui.cli --interface eth0 --spoof-ip 192.168.1.50
+# Execute with a specific profile
+poetry run python -m netphantom.ui.main --profile profile.yaml
 
-# Specify specific protocols
-poetry run python -m netph.ui.cli -i eth0 -s 192.168.1.50 -p llmnr mdns
+# Dry-run for scope validation
+poetry run python -m netphantom.ui.main --profile profile.yaml --dry-run
 ```
 
-## 🛡️ Security & Disclaimer
+## 🛡️ Security & Legal Disclaimer
 
-> [!WARNING]
-> This tool is for educational and authorized penetration testing purposes ONLY. Unauthorized use of NetPhantom against systems you do not have explicit permission to test is illegal and unethical.
+> [!CAUTION]
+> **FOR AUTHORIZED USE ONLY.** 
+> Use of NetPhantom is strictly limited to authorized security testing, research, and educational purposes. Unauthorized use against any network without explicit, written permission is strictly prohibited and may violate local and international laws. The authors assume no liability for misuse of this tool.
 
-## 📜 License
+## 📜 MITRE ATT&CK Mapping
+- **T1557.001**: LLMNR/NBT-NS Poisoning and SMB Relay (Interception)
+- **T1557**: Adversary-in-the-Middle (Credential Capture)
 
-This project is licensed under the MIT License.
+## 📄 License
+Licensed under the MIT License.

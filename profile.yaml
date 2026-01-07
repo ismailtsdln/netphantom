@@ -1,0 +1,31 @@
+poisoning:
+  interface: "lo"
+  spoof_ip: "127.0.0.1"
+  enabled_protocols:
+    - "llmnr"
+    - "nbt_ns"
+    - "mdns"
+  dry_run: false
+
+capture:
+  enabled_handlers:
+    - "http_auth"
+  save_path: "captured_creds.json"
+
+safety:
+  allowed_ranges:
+    - "127.0.0.0/8"
+  kill_switch_path: "/tmp/netphantom.kill"
+
+plugins:
+  llmnr:
+    interface: "lo"
+    spoof_ip: "127.0.0.1"
+  nbt_ns:
+    interface: "lo"
+    spoof_ip: "127.0.0.1"
+  mdns:
+    interface: "lo"
+    spoof_ip: "127.0.0.1"
+  http_auth:
+    interface: "lo"
