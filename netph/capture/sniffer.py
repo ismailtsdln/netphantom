@@ -51,4 +51,4 @@ class AuthSniffer:
         if self._thread:
             self._thread.join()
         logger.info("[Capture] Stopped sniffer.")
- PelicanAuthSniffer = AuthSniffer # Alias if needed
+
