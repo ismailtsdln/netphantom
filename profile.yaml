@@ -1,5 +1,5 @@
 poisoning:
-  interface: "lo"
+  interface: "lo0"
   spoof_ip: "127.0.0.1"
   enabled_protocols:
     - "llmnr"
@@ -19,13 +19,13 @@ safety:
 
 plugins:
   llmnr:
-    interface: "lo"
+    interface: "lo0"
     spoof_ip: "127.0.0.1"
   nbt_ns:
-    interface: "lo"
+    interface: "lo0"
     spoof_ip: "127.0.0.1"
   mdns:
-    interface: "lo"
+    interface: "lo0"
     spoof_ip: "127.0.0.1"
   http_auth:
-    interface: "lo"
+    interface: "lo0"

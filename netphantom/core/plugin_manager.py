@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import pkgutil
-from typing import Dict, List, Type, cast
+from typing import Dict, List, Type, cast, Any
 from netphantom.core.interfaces import BasePlugin, ProtocolPlugin, AuthHandler
 from netphantom.utils.logger import logger
 
