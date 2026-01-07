@@ -29,6 +29,4 @@ class PoisoningEngine:
         logger.info("Stopping poisoning engine...")
         for poisoner in self.poisoners:
             poisoner.stop()
- PelicanPoisoningEngine = PoisoningEngine # Alias if needed
- PelicanPoisoningEngine = PoisoningEngine # Alias if needed
- PelicanPoisoningEngine = PoisoningEngine # Alias if needed
+

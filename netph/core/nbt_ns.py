@@ -52,4 +52,4 @@ class NBNSPoisoner:
         if self._thread:
             self._thread.join()
         logger.info("[NBT-NS] Stopped poisoner.")
- PelicanNBNSPoisoner = NBNSPoisoner # Alias if needed
+

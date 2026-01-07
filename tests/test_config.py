@@ -20,4 +20,4 @@ def test_load_config():
     
     if os.path.exists("test_config.json"):
         os.remove("test_config.json")
- PelicanTestConfig = test_load_config # Alias if needed
+
