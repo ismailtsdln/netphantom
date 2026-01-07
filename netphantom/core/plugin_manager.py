@@ -56,11 +56,9 @@ class PluginManager:
                 logger.error(f"Failed to load handler {cls.__name__}: {e}")
 
     async def start_all(self):
-        for name, plugin in self.plugins.items():
-            logger.info(f"Starting plugin: {name}")
-            await plugin.start()
+        logger.info(f"Starting {len(self.plugins)} plugins...")
+        await asyncio.gather(*[plugin.start() for plugin in self.plugins.values()])
 
     async def stop_all(self):
-        for name, plugin in self.plugins.items():
-            logger.info(f"Stopping plugin: {name}")
-            await plugin.stop()
+        logger.info(f"Stopping {len(self.plugins)} plugins...")
+        await asyncio.gather(*[plugin.stop() for plugin in self.plugins.values()])

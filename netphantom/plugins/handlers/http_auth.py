@@ -24,23 +24,30 @@ class HTTPAuthHandler(AuthHandler):
 
     async def _run(self) -> None:
         logger.info(f"[HTTP Auth] Monitoring traffic on {self.interface}")
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, self._sniff_blocking)
+        def stop_filter(p: Packet) -> bool:
+            return not self.running
 
-    def _sniff_blocking(self):
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._sniff_blocking, stop_filter)
+
+    def _sniff_blocking(self, stop_filter: Any) -> None:
         sniff(
             iface=self.interface, 
             filter="tcp port 80", 
             prn=self._handle_packet, 
             store=0, 
-            stop_filter=lambda x: not self.running
+            stop_filter=stop_filter
         )
 
-    def _handle_packet(self, packet: Packet):
+    def _handle_packet(self, packet: Packet) -> None:
         if Raw in packet:
-            payload = packet[Raw].load.decode(errors='ignore')
-            if "Authorization: NTLM" in payload:
-                self._process_ntlm(payload, packet[IP].src)
+            try:
+                payload = packet[Raw].load.decode(errors='ignore')
+                if "Authorization: NTLM" in payload:
+                    source_ip = packet[IP].src if IP in packet else (packet[IPv6].src if IPv6 in packet else "Unknown")
+                    self._process_ntlm(payload, source_ip)
+            except Exception as e:
+                logger.error(f"[HTTP Auth] Error processing packet: {e}")
 
     def _process_ntlm(self, payload: str, source_ip: str):
         # Extremely simplified NTLM extraction for demo

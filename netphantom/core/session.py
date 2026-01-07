@@ -18,7 +18,7 @@ class SessionManager:
         self.save_path = save_path
         self.credentials: List[Credential] = []
 
-    def add_intercept(self, source_ip: str, protocol: str, handler: str, data: Dict[str, Any]):
+    async def add_intercept(self, source_ip: str, protocol: str, handler: str, data: Dict[str, Any]):
         cred = Credential(
             source_ip=source_ip,
             protocol=protocol,
@@ -28,12 +28,20 @@ class SessionManager:
         )
         self.credentials.append(cred)
         logger.info(f"New credential session registered from {source_ip} via {protocol}/{handler}")
-        self._save()
+        await self._async_save()
 
-    def _save(self):
+    async def _async_save(self):
+        """Asynchronously save sessions to disk."""
+        try:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, self._save_sync)
+        except Exception as e:
+            logger.error(f"Failed to trigger async save: {e}")
+
+    def _save_sync(self):
         try:
             with open(self.save_path, "w") as f:
-                json.dump([c.dict() for c in self.credentials], f, indent=4)
+                json.dump([c.model_dump() for c in self.credentials], f, indent=4)
         except Exception as e:
             logger.error(f"Failed to save sessions: {e}")
 
