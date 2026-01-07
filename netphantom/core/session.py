@@ -39,4 +39,4 @@ class SessionManager:
 
     def get_summary(self) -> str:
         return f"Total captured sessions: {len(self.credentials)}"
- PelicanSessionManager = SessionManager
+

@@ -38,4 +38,4 @@ class EnvScanner:
         }
         logger.info(f"Gathered environment intel: {intel}")
         return intel
- PelicanEnvScanner = EnvScanner
+

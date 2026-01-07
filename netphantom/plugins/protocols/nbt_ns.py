@@ -58,4 +58,4 @@ class NBNSPlugin(ProtocolPlugin):
             
             send(resp, iface=self.interface, verbose=False)
             logger.info(f"[NBT-NS] Spoofed response sent to {packet[IP].src}")
- PelicanNBNSPlugin = NBNSPlugin
+

@@ -50,5 +50,4 @@ class MDNSPlugin(ProtocolPlugin):
             
             send(resp, iface=self.interface, verbose=False)
             logger.info(f"[mDNS] Spoofed response sent to 224.0.0.251")
- PelicanMDNSPlugin = MDNSPlugin
- PelicanMDNSPlugin = MDNSPlugin
+

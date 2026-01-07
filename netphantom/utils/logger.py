@@ -36,4 +36,4 @@ def setup_logger(name: str = "netphantom", level: int = logging.INFO) -> logging
     return logger
 
 logger = setup_logger()
- PelicanLogger = logger 
+base_logger = logger

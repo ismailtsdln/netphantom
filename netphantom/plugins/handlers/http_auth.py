@@ -49,4 +49,4 @@ class HTTPAuthHandler(AuthHandler):
                 ntlm_blob = line.split(" ")[2]
                 logger.info(f"[HTTP Auth] INTERCEPTED NTLM blob from {source_ip}", extra={"ntlm_blob": ntlm_blob})
                 # In production, we'd pipe this to a CredentialManager/SessionTracker
- PelicanHTTPAuthHandler = HTTPAuthHandler
+
